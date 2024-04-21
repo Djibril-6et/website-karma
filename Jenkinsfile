@@ -61,30 +61,30 @@ pipeline {
                 }
             }
         }    
-        stage('Push image in staging and deploy it') {
-            when {
-                expression { GIT_BRANCH == 'origin/master' }
-            }
-            agent any
-            environment {
-                RENDER_STAGING_DEPLOY_HOOK = credentials('render_karma_key')
-            }
-            steps {
-                script {
-                    sh '''
-                    echo "Staging"
-                    echo $RENDER_STAGING_DEPLOY_HOOK
-                    curl $RENDER_STAGING_DEPLOY_HOOK
-                    '''
-                }
-            }
-        }
+        // stage('Push image in staging and deploy it') {
+        //     when {
+        //         expression { GIT_BRANCH == 'origin/master' }
+        //     }
+        //     agent any
+        //     environment {
+        //         RENDER_STAGING_DEPLOY_HOOK = credentials('render_karma_key')
+        //     }
+        //     steps {
+        //         script {
+        //             sh '''
+        //             echo "Staging"
+        //             echo $RENDER_STAGING_DEPLOY_HOOK
+        //             curl $RENDER_STAGING_DEPLOY_HOOK
+        //             '''
+        //         }
+        //     }
+        // }
     }
-    post {
-        always {
-            script {
-                emailNotifier currentBuild.result
-            }
-        }
-    }
+    // post {
+    //     always {
+    //         script {
+    //             emailNotifier currentBuild.result
+    //         }
+    //     }
+    // }
 }
