@@ -1,6 +1,3 @@
-/* import shared library */
-@Library('shared-library')_
-
 pipeline {
     environment {
         ID_DOCKER = "${ID_DOCKER_PARAMS}"
@@ -54,7 +51,7 @@ pipeline {
         stage ('Login and Push Image on docker hub') {
             agent any
             environment {
-                DOCKERHUB_PASSWORD  = credentials('159e35f1-8092-4d4b-bd1a-d66088a6d6e0')
+                DOCKERHUB_PASSWORD  = credentials('')
             }
             steps {
                 script {
