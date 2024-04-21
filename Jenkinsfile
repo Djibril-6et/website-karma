@@ -1,3 +1,4 @@
+
 pipeline {
     environment {
         ID_DOCKER = "${ID_DOCKER_PARAMS}"
@@ -51,7 +52,7 @@ pipeline {
         stage ('Login and Push Image on docker hub') {
             agent any
             environment {
-                DOCKERHUB_PASSWORD  = 'Lmdp$Pdoc1'
+                DOCKERHUB_PASSWORD  = credentials('Lmdp$Pdoc1')
             }
             steps {
                 script {
@@ -61,30 +62,30 @@ pipeline {
                 }
             }
         }    
-        // stage('Push image in staging and deploy it') {
-        //     when {
-        //         expression { GIT_BRANCH == 'origin/master' }
-        //     }
-        //     agent any
-        //     environment {
-        //         RENDER_STAGING_DEPLOY_HOOK = credentials('render_karma_key')
-        //     }
-        //     steps {
-        //         script {
-        //             sh '''
-        //             echo "Staging"
-        //             echo $RENDER_STAGING_DEPLOY_HOOK
-        //             curl $RENDER_STAGING_DEPLOY_HOOK
-        //             '''
-        //         }
-        //     }
-        // }
+        stage('Push image in staging and deploy it') {
+            when {
+                expression { GIT_BRANCH == 'origin/master' }
+            }
+            agent any
+            environment {
+                RENDER_STAGING_DEPLOY_HOOK = credentials('render_karma_key')
+            }
+            steps {
+                script {
+                    sh '''
+                    echo "Staging"
+                    echo $RENDER_STAGING_DEPLOY_HOOK
+                    curl $RENDER_STAGING_DEPLOY_HOOK
+                    '''
+                }
+            }
+        }
     }
-    // post {
-    //     always {
-    //         script {
-    //             emailNotifier currentBuild.result
-    //         }
-    //     }
-    // }
+    post {
+        always {
+            script {
+                emailNotifier currentBuild.result
+            }
+        }
+    }
 }
