@@ -52,7 +52,7 @@ pipeline {
         stage ('Login and Push Image on docker hub') {
             agent any
             environment {
-                DOCKERHUB_PASSWORD  = credentials('Lmdp$Pdoc1')
+                DOCKERHUB_PASSWORD  = "${PASS_DOCKER_PARAMS}"
             }
             steps {
                 script {
