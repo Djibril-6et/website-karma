@@ -4,11 +4,11 @@ pipeline {
         IMAGE_NAME = "website-karma"
         IMAGE_TAG = "latest"
         DOCKER_PASSWORD = "${PASS_DOCKER_PARAMS}"
+        PORT_EXPOSED = 80
     }
-    agent none
+    agent any
     stages {
         stage('Build image') {
-            agent any
             steps {
                 script {
                     bat 'docker build -t %ID_DOCKER%/%IMAGE_NAME%:%IMAGE_TAG% .'
@@ -16,7 +16,6 @@ pipeline {
             }
         }
         stage('Run container based on built image') {
-            agent any
             steps {
                 script {
                     bat '''
@@ -35,7 +34,6 @@ pipeline {
             }
         }
         stage('Clean Container') {
-            agent any
             steps {
                 script {
                     bat '''
@@ -49,7 +47,7 @@ pipeline {
             steps {
                 script {
                     bat '''
-                        echo %DOCKERHUB_PASSWORD% | docker login -u %ID_DOCKER% --password-stdin
+                        echo %DOCKER_PASSWORD% | docker login -u %ID_DOCKER% --password-stdin
                         docker push %ID_DOCKER%/%IMAGE_NAME%:%IMAGE_TAG%
                     '''
                 }
