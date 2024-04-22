@@ -7,9 +7,6 @@ pipeline {
         IMAGE_NAME = "website-karma"
         IMAGE_TAG = "latest"
         DOCKERHUB_PASSWORD = "${DOCKERHUB_PASSWORD_PSW}"
-        RENDER_API_TOKEN = credentials('RENDER_API_TOKEN')
-        RENDER_SERVICE_ID = "srv-coh65v6v3ddc73fi6pu0"
-        RENDER_DEPLOY_HOOK_URL_FINAL1 = credentials('RENDER_DEPLOY_HOOK_URL_FINAL1')
     }
 
     triggers {
