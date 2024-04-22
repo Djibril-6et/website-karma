@@ -45,32 +45,9 @@ pipeline {
             }
         }
 
-        stage('Trigger Deploy to Render') {
-            steps {
-                // Utilisez withCredentials pour accéder à l'URL du webhook de manière sécurisée
-                withCredentials([string(credentialsId: 'RENDER_DEPLOY_HOOK_URL_FINAL1', variable: 'DEPLOY_HOOK_URL')]) {
-                    script {
-                        // Envoi d'une requête POST au webhook de déploiement
-                        sh "curl -X POST ${DEPLOY_HOOK_URL}"
-                    }
-                }
-            }
-        }
+       
 
     }
 
-    // notif-jenkins@joelkoussawo.me
-
-    post {
-        success {
-            mail to: 'notif-jenkins@joelkoussawo.me',
-                 subject: "Succès du Pipeline ${env.JOB_NAME} ${env.BUILD_NUMBER}",
-                 body: "Le pipeline a réussi. L'application a été déployée sur Render."
-        }
-        failure {
-            mail to: 'notif-jenkins@joelkoussawo.me',
-                 subject: "Échec du Pipeline ${env.JOB_NAME} ${env.BUILD_NUMBER}",
-                 body: "Le pipeline a échoué. Veuillez vérifier Jenkins pour plus de détails."
-        }
-    }
+   
 }
