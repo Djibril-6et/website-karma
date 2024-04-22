@@ -1,91 +1,76 @@
-
 pipeline {
+    agent any
+
     environment {
+        // Variables d'environnement nécessaires
         ID_DOCKER = "${ID_DOCKER_PARAMS}"
         IMAGE_NAME = "website-karma"
         IMAGE_TAG = "latest"
+        DOCKERHUB_PASSWORD = "${DOCKERHUB_PASSWORD_PSW}"
+        RENDER_API_TOKEN = credentials('RENDER_API_TOKEN')
+        RENDER_SERVICE_ID = "srv-coh65v6v3ddc73fi6pu0"
+        RENDER_DEPLOY_HOOK_URL_FINAL1 = credentials('RENDER_DEPLOY_HOOK_URL_FINAL1')
     }
-    agent none
+
+    triggers {
+        // Vérifie le dépôt pour des changements toutes les 2 minutes
+        pollSCM('H/2 * * * *')
+    }
+
     stages {
         stage('Build image') {
-            agent any
             steps {
                 script {
-                    sh 'docker build -t ${ID_DOCKER}/$IMAGE_NAME:$IMAGE_TAG .'
+                    sh 'docker build -t ${ID_DOCKER}/${IMAGE_NAME}:${IMAGE_TAG} .'
                 }
             }
         }
-        stage('Run container based on builded image') {
-            agent any
-            steps {
-                script {
-                    sh '''
-                    echo "Clean Environment"
-                    docker rm -f $IMAGE_NAME || echo "container does not exist"
-                    docker run --name $IMAGE_NAME -d -p ${PORT_EXPOSED}:80 -e PORT=80 ${ID_DOCKER}/$IMAGE_NAME:$IMAGE_TAG
-                    sleep 5
-                    '''
-                }
-            }
-        }
+
         stage('Test image') {
-            agent any
+            steps {
+                script {
+                    echo "Exécution des tests"
+                }
+            }
+        }
+
+        stage('Login and Push Image on docker hub') {
             steps {
                 script {
                     sh '''
-                    curl http://localhost:${PORT_EXPOSED} | grep -q "Deals of the Week"
+                        echo ${DOCKERHUB_PASSWORD} | docker login -u ${ID_DOCKER} --password-stdin
+                        docker push ${ID_DOCKER}/${IMAGE_NAME}:${IMAGE_TAG}
                     '''
                 }
             }
         }
-        stage('Clean Container') {
-            agent any
+
+        stage('Trigger Deploy to Render') {
             steps {
-                script {
-                    sh '''
-                    docker stop $IMAGE_NAME
-                    docker rm $IMAGE_NAME
-                    '''
+                // Utilisez withCredentials pour accéder à l'URL du webhook de manière sécurisée
+                withCredentials([string(credentialsId: 'RENDER_DEPLOY_HOOK_URL_FINAL1', variable: 'DEPLOY_HOOK_URL')]) {
+                    script {
+                        // Envoi d'une requête POST au webhook de déploiement
+                        sh "curl -X POST ${DEPLOY_HOOK_URL}"
+                    }
                 }
             }
         }
-        stage ('Login and Push Image on docker hub') {
-            agent any
-            environment {
-                DOCKERHUB_PASSWORD  = "${PASS_DOCKER_PARAMS}"
-            }
-            steps {
-                script {
-                    sh '''
-                    docker push ${ID_DOCKER}/$IMAGE_NAME:$IMAGE_TAG
-                    '''
-                }
-            }
-        }    
-        stage('Push image in staging and deploy it') {
-            when {
-                expression { GIT_BRANCH == 'origin/master' }
-            }
-            agent any
-            environment {
-                RENDER_STAGING_DEPLOY_HOOK = credentials('render_karma_key')
-            }
-            steps {
-                script {
-                    sh '''
-                    echo "Staging"
-                    echo $RENDER_STAGING_DEPLOY_HOOK
-                    curl $RENDER_STAGING_DEPLOY_HOOK
-                    '''
-                }
-            }
-        }
+
     }
+
+    // notif-jenkins@joelkoussawo.me
+
     post {
-        always {
-            script {
-                emailNotifier currentBuild.result
-            }
+        success {
+            mail to: 'notif-jenkins@joelkoussawo.me',
+                 subject: "Succès du Pipeline ${env.JOB_NAME} ${env.BUILD_NUMBER}",
+                 body: "Le pipeline a réussi. L'application a été déployée sur Render."
+        }
+        failure {
+            mail to: 'notif-jenkins@joelkoussawo.me',
+                 subject: "Échec du Pipeline ${env.JOB_NAME} ${env.BUILD_NUMBER}",
+                 body: "Le pipeline a échoué. Veuillez vérifier Jenkins pour plus de détails."
         }
     }
 }
