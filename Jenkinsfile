@@ -3,7 +3,7 @@ pipeline {
         ID_DOCKER = "djibrilci"
         IMAGE_NAME = "website-karma"
         IMAGE_TAG = "latest"
-        DOCKER_PASSWORD = "Lmdp$Pdoc1"
+        DOCKER_PASSWORD = 'Lmdp$Pdoc1'
         PORT_EXPOSED = 80
     }
     agent any
