@@ -1,50 +1,67 @@
-pipeline {
-    agent any
 
+pipeline {
     environment {
-        // Variables d'environnement nécessaires
         ID_DOCKER = "${ID_DOCKER_PARAMS}"
         IMAGE_NAME = "website-karma"
         IMAGE_TAG = "latest"
-        DOCKERHUB_PASSWORD = "${DOCKERHUB_PASSWORD_PSW}"
     }
-
-    triggers {
-        // Vérifie le dépôt pour des changements toutes les 2 minutes
-        pollSCM('H/2 * * * *')
-    }
-
+    agent none
     stages {
         stage('Build image') {
+            agent any
             steps {
                 script {
-                    sh 'docker build -t ${ID_DOCKER}/${IMAGE_NAME}:${IMAGE_TAG} .'
+                    sh 'docker build -t ${ID_DOCKER}/$IMAGE_NAME:$IMAGE_TAG .'
                 }
             }
         }
-
-        stage('Test image') {
-            steps {
-                script {
-                    echo "Exécution des tests"
-                }
-            }
-        }
-
-        stage('Login and Push Image on docker hub') {
+        stage('Run container based on builded image') {
+            agent any
             steps {
                 script {
                     sh '''
-                        echo ${DOCKERHUB_PASSWORD} | docker login -u ${ID_DOCKER} --password-stdin
-                        docker push ${ID_DOCKER}/${IMAGE_NAME}:${IMAGE_TAG}
+                    echo "Clean Environment"
+                    docker rm -f $IMAGE_NAME || echo "container does not exist"
+                    docker run --name $IMAGE_NAME -d -p ${PORT_EXPOSED}:80 -e PORT=80 ${ID_DOCKER}/$IMAGE_NAME:$IMAGE_TAG
+                    sleep 5
                     '''
                 }
             }
         }
-
-       
-
+        stage('Test image') {
+            agent any
+            steps {
+                script {
+                    sh '''
+                    curl http://localhost:${PORT_EXPOSED} | grep -q "Deals of the Week"
+                    '''
+                }
+            }
+        }
+        stage('Clean Container') {
+            agent any
+            steps {
+                script {
+                    sh '''
+                    docker stop $IMAGE_NAME
+                    docker rm $IMAGE_NAME
+                    '''
+                }
+            }
+        }
+        stage ('Login and Push Image on docker hub') {
+            agent any
+            environment {
+                DOCKERHUB_PASSWORD  = "${PASS_DOCKER_PARAMS}"
+            }
+            steps {
+                script {
+                    sh '''
+                    docker push ${ID_DOCKER}/$IMAGE_NAME:$IMAGE_TAG
+                    '''
+                }
+            }
+        }    
     }
-
    
 }
