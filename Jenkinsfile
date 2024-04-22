@@ -75,7 +75,8 @@ pipeline {
     post {
         success {
             powershell '''
-            Send-MailMessage -To "djibril.6ets@gmail.com" `
+            Send-MailMessage -From "marchaohugo@gmail.com" `
+                            -To "djibril.6et@gmail.com" `
                             -Subject "Succès du Pipeline ${env.JOB_NAME} ${env.BUILD_NUMBER}" `
                             -Body "Le pipeline a réussi. L'application a été déployée sur Render." `
                             -SmtpServer "smtp.gmail.com"
@@ -83,7 +84,8 @@ pipeline {
         }
         failure {
             powershell '''
-            Send-MailMessage -To "djibril.6ets@gmail.com" `
+            Send-MailMessage -From "marchaohugo@gmail.com" `
+                            -To "djibril.6et@gmail.com" `
                             -Subject "Échec du Pipeline ${env.JOB_NAME} ${env.BUILD_NUMBER}" `
                             -Body "Le pipeline a échoué. Veuillez vérifier Jenkins pour plus de détails." `
                             -SmtpServer "smtp.gmail.com"
