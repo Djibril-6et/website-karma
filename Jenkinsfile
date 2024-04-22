@@ -10,7 +10,7 @@ pipeline {
             agent any
             steps {
                 script {
-                    bat 'docker build -t %ID_DOCKER%/%IMAGE_NAME%:%IMAGE_TAG% .'
+                    bat 'docker build -t $ID_DOCKER/$IMAGE_NAME:$IMAGE_TAG .'
                 }
             }
         }
@@ -20,8 +20,8 @@ pipeline {
                 script {
                     bat '''
                     echo "Clean Environment"
-                    docker rm -f %IMAGE_NAME% || echo "container does not exist"
-                    docker run --name %IMAGE_NAME% -d -p %PORT_EXPOSED%:80 -e PORT=80 %ID_DOCKER%/%IMAGE_NAME%:%IMAGE_TAG%
+                    docker rm -f $IMAGE_NAME || echo "container does not exist"
+                    docker run --name $IMAGE_NAME -d -p $PORT_EXPOSED:80 -e PORT=80 $ID_DOCKER/%IMAGE_NAME:$IMAGE_TAG
                     timeout /t 5 /nobreak > NUL
                     '''
                 }
@@ -32,7 +32,7 @@ pipeline {
             steps {
                 script {
                     bat '''
-                    curl http://localhost:%PORT_EXPOSED% | findstr /C:"Deals of the Week" > nul
+                    curl http://localhost:$PORT_EXPOSED | findstr /C:"Deals of the Week" > nul
                     if %errorlevel% neq 0 (
                         exit /b 1
                     )
@@ -45,8 +45,8 @@ pipeline {
             steps {
                 script {
                     bat '''
-                    docker stop %IMAGE_NAME%
-                    docker rm %IMAGE_NAME%
+                    docker stop $IMAGE_NAME
+                    docker rm $IMAGE_NAME
                     '''
                 }
             }
@@ -59,7 +59,7 @@ pipeline {
             steps {
                 script {
                     bat '''
-                    docker push %ID_DOCKER%/%IMAGE_NAME%:%IMAGE_TAG%
+                    docker push $ID_DOCKER/$IMAGE_NAME:$IMAGE_TAG
                     '''
                 }
             }
