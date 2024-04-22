@@ -74,23 +74,16 @@ pipeline {
 
     post {
         success {
-            powershell '''
-            Send-MailMessage -From "marchaohugo@gmail.com" `
-                            -To "djibril.6et@gmail.com" `
-                            -Subject "Succès du Pipeline ${env.JOB_NAME} ${env.BUILD_NUMBER}" `
-                            -Body "Le pipeline a réussi. L'application a été déployée sur Render." `
-                            -SmtpServer "smtp.gmail.com"
-            '''
+            mail to: 'marchaohugo@gmail.com',
+                 subject: "Succès du Pipeline ${env.JOB_NAME} ${env.BUILD_NUMBER}",
+                 body: "Le pipeline a réussi. L'application a été déployée sur Render."
         }
         failure {
-            powershell '''
-            Send-MailMessage -From "marchaohugo@gmail.com" `
-                            -To "djibril.6et@gmail.com" `
-                            -Subject "Échec du Pipeline ${env.JOB_NAME} ${env.BUILD_NUMBER}" `
-                            -Body "Le pipeline a échoué. Veuillez vérifier Jenkins pour plus de détails." `
-                            -SmtpServer "smtp.gmail.com"
-            '''
+            mail to: 'marchaohugo@gmail.com',
+                 subject: "Échec du Pipeline ${env.JOB_NAME} ${env.BUILD_NUMBER}",
+                 body: "Le pipeline a échoué. Veuillez vérifier Jenkins pour plus de détails."
         }
     }
+
 
 }
