@@ -1,4 +1,3 @@
-
 pipeline {
     environment {
         ID_DOCKER = "${ID_DOCKER_PARAMS}"
@@ -11,19 +10,19 @@ pipeline {
             agent any
             steps {
                 script {
-                    sh 'docker build -t ${ID_DOCKER}/$IMAGE_NAME:$IMAGE_TAG .'
+                    bat 'docker build -t %ID_DOCKER%/%IMAGE_NAME%:%IMAGE_TAG% .'
                 }
             }
         }
-        stage('Run container based on builded image') {
+        stage('Run container based on built image') {
             agent any
             steps {
                 script {
-                    sh '''
+                    bat '''
                     echo "Clean Environment"
-                    docker rm -f $IMAGE_NAME || echo "container does not exist"
-                    docker run --name $IMAGE_NAME -d -p ${PORT_EXPOSED}:80 -e PORT=80 ${ID_DOCKER}/$IMAGE_NAME:$IMAGE_TAG
-                    sleep 5
+                    docker rm -f %IMAGE_NAME% || echo "container does not exist"
+                    docker run --name %IMAGE_NAME% -d -p %PORT_EXPOSED%:80 -e PORT=80 %ID_DOCKER%/%IMAGE_NAME%:%IMAGE_TAG%
+                    timeout /t 5 /nobreak > NUL
                     '''
                 }
             }
@@ -32,8 +31,11 @@ pipeline {
             agent any
             steps {
                 script {
-                    sh '''
-                    curl http://localhost:${PORT_EXPOSED} | grep -q "Deals of the Week"
+                    bat '''
+                    curl http://localhost:%PORT_EXPOSED% | findstr /C:"Deals of the Week" > nul
+                    if %errorlevel% neq 0 (
+                        exit /b 1
+                    )
                     '''
                 }
             }
@@ -42,9 +44,9 @@ pipeline {
             agent any
             steps {
                 script {
-                    sh '''
-                    docker stop $IMAGE_NAME
-                    docker rm $IMAGE_NAME
+                    bat '''
+                    docker stop %IMAGE_NAME%
+                    docker rm %IMAGE_NAME%
                     '''
                 }
             }
@@ -56,12 +58,11 @@ pipeline {
             }
             steps {
                 script {
-                    sh '''
-                    docker push ${ID_DOCKER}/$IMAGE_NAME:$IMAGE_TAG
+                    bat '''
+                    docker push %ID_DOCKER%/%IMAGE_NAME%:%IMAGE_TAG%
                     '''
                 }
             }
         }    
     }
-   
 }
