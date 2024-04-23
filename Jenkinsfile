@@ -1,9 +1,9 @@
 pipeline {
     environment {
-        ID_DOCKER = "djibrilci"
+        ID_DOCKER = "${ID_DOCKER_PARAMS}"
         IMAGE_NAME = "website-karma"
         IMAGE_TAG = "latest"
-        DOCKER_PASSWORD = 'Lmdp$Pdoc1'
+        DOCKER_PASSWORD = "${PASS_DOCKER_PARAMS}"
         PORT_EXPOSED = 80
     }
     agent any
