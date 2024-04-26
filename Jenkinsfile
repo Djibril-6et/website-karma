@@ -61,20 +61,22 @@ pipeline {
         }
 
         stage('Push image in staging and deploy it') {
-            when {
-                expression { GIT_BRANCH == 'origin/main' }
-            }
-            agent any
-            environment {
-                RENDER_STAGING_DEPLOY_HOOK = credentials('render_karma_key')
-            }
-            steps {
-                powershell '''
-                Write-Output "Staging"
-                Write-Output $env:RENDER_STAGING_DEPLOY_HOOK
-                Invoke-WebRequest -Uri $env:RENDER_STAGING_DEPLOY_HOOK
+          when {
+            expression { GIT_BRANCH == 'origin/main' }
+          }
+          agent any
+          environment {
+            RENDER_STAGING_DEPLOY_HOOK = credentials('render_karma_key')
+          }  
+          steps {
+            script {
+              bat '''
+                echo "Staging"
+                echo %RENDER_STAGING_DEPLOY_HOOK%
+                curl %RENDER_STAGING_DEPLOY_HOOK%
                 '''
-            }
+              }
+          }
         }
     }
 
