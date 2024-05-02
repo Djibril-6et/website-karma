@@ -9,7 +9,7 @@ pipeline {
     agent any
 
     triggers {
-        // Vérifie le dépôt pour des changements toutes les 2 minutes
+        // Vérifie le dépôt pour des changements toutes les 5 minutes
         pollSCM('H/5 * * * *')
     }
     
